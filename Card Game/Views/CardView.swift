@@ -107,7 +107,7 @@ struct CardView: View {
     }
 }
 
-/// Beautiful card hand view for landscape
+/// Compact card hand view for landscape
 struct CardHandView: View {
     let cards: [Card]
     let selectedCards: Set<Card>
@@ -115,7 +115,7 @@ struct CardHandView: View {
     
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: -20) {
+            HStack(spacing: -15) {
                 ForEach(cards, id: \.id) { card in
                     CardView(
                         card: card,
@@ -123,11 +123,12 @@ struct CardHandView: View {
                         isSelected: selectedCards.contains(card),
                         onTap: { onCardTap(card) }
                     )
+                    .scaleEffect(0.7) // Make cards smaller to fit more
                 }
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 16)
         }
-        .frame(height: 100)
+        .frame(height: 60) // Reduced height
     }
 }
 

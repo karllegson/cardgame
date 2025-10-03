@@ -157,6 +157,10 @@ struct HomeView: View {
         .fullScreenCover(isPresented: $showingGame) {
             GameTableView()
                 .preferredColorScheme(.light)
+                .onAppear {
+                    // Force landscape orientation when game starts
+                    UIDevice.current.setValue(UIInterfaceOrientation.landscapeLeft.rawValue, forKey: "orientation")
+                }
         }
         .alert("Error", isPresented: $viewModel.showingError) {
             Button("OK") { }

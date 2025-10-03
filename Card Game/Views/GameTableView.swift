@@ -28,128 +28,109 @@ struct GameTableView: View {
                 )
                 .ignoresSafeArea()
                 
-                // Game table
-                VStack(spacing: 0) {
-                    // Top bar with game info
-                    HStack {
-                        Button(action: { dismiss() }) {
-                            Image(systemName: "chevron.left")
-                                .font(.title2)
-                                .foregroundColor(.white)
-                        }
-                        
+                // Main game layout - optimized for landscape
+                HStack(spacing: 8) {
+                    // Left player
+                    VStack {
                         Spacer()
-                        
-                        Text("Vector: Pusoy Dos")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-                        
+                        PlayerView(
+                            player: viewModel.leftPlayer,
+                            position: .left,
+                            isCurrentPlayer: viewModel.isCurrentPlayer(.left)
+                        )
                         Spacer()
-                        
-                        Button(action: { viewModel.showGameMenu() }) {
-                            Image(systemName: "ellipsis.circle")
-                                .font(.title2)
-                                .foregroundColor(.white)
-                        }
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 10)
+                    .frame(width: 80)
                     
-                    // Main game area
-                    HStack(spacing: 0) {
-                        // Left player
-                        VStack {
-                            Spacer()
-                            PlayerView(
-                                player: viewModel.leftPlayer,
-                                position: .left,
-                                isCurrentPlayer: viewModel.isCurrentPlayer(.left)
-                            )
-                            Spacer()
-                        }
-                        .frame(width: 100)
-                        
-                        // Center game area
-                        VStack(spacing: 0) {
-                            // Top player
-                            PlayerView(
-                                player: viewModel.topPlayer,
-                                position: .top,
-                                isCurrentPlayer: viewModel.isCurrentPlayer(.top)
-                            )
-                            .padding(.top, 20)
-                            
-                            Spacer()
-                            
-                            // Play area
-                            PlayAreaView(
-                                currentTrick: viewModel.currentTrick,
-                                lastPlay: viewModel.lastPlay
-                            )
-                            .frame(height: 150)
-                            
-                            Spacer()
-                            
-                            // Current player (bottom)
-                            PlayerView(
-                                player: viewModel.currentPlayer,
-                                position: .bottom,
-                                isCurrentPlayer: true
-                            )
-                            .padding(.bottom, 20)
-                        }
-                        .frame(maxWidth: .infinity)
-                        
-                        // Right player
-                        VStack {
-                            Spacer()
-                            PlayerView(
-                                player: viewModel.rightPlayer,
-                                position: .right,
-                                isCurrentPlayer: viewModel.isCurrentPlayer(.right)
-                            )
-                            Spacer()
-                        }
-                        .frame(width: 100)
-                    }
-                    .padding(.horizontal, 20)
-                    
-                    // Player's hand area
-                    if viewModel.gamePhase == .active {
-                        VStack(spacing: 12) {
-                            // Action buttons
-                            HStack(spacing: 20) {
-                                Button(action: { viewModel.passTurn() }) {
-                                    HStack {
-                                        Image(systemName: "hand.raised.fill")
-                                        Text("Pass")
-                                    }
-                                    .font(.headline)
+                    // Center game area
+                    VStack(spacing: 4) {
+                        // Top bar with game info
+                        HStack {
+                            Button(action: { dismiss() }) {
+                                Image(systemName: "chevron.left")
+                                    .font(.title3)
                                     .foregroundColor(.white)
-                                    .padding(.horizontal, 24)
-                                    .padding(.vertical, 12)
-                                    .background(Color.orange)
-                                    .cornerRadius(25)
-                                }
-                                .disabled(viewModel.selectedCards.isEmpty)
-                                
-                                Button(action: { viewModel.playSelectedCards() }) {
-                                    HStack {
-                                        Image(systemName: "play.fill")
-                                        Text("Play Cards")
-                                    }
-                                    .font(.headline)
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, 24)
-                                    .padding(.vertical, 12)
-                                    .background(viewModel.selectedCards.isEmpty ? Color.gray : Color.blue)
-                                    .cornerRadius(25)
-                                }
-                                .disabled(viewModel.selectedCards.isEmpty)
                             }
                             
-                            // Player's cards
+                            Spacer()
+                            
+                            Text("Vector: Pusoy Dos")
+                                .font(.headline)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                            
+                            Spacer()
+                            
+                            Button(action: { viewModel.showGameMenu() }) {
+                                Image(systemName: "ellipsis.circle")
+                                    .font(.title3)
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        
+                        // Top player
+                        PlayerView(
+                            player: viewModel.topPlayer,
+                            position: .top,
+                            isCurrentPlayer: viewModel.isCurrentPlayer(.top)
+                        )
+                        .padding(.vertical, 4)
+                        
+                        // Play area
+                        PlayAreaView(
+                            currentTrick: viewModel.currentTrick,
+                            lastPlay: viewModel.lastPlay
+                        )
+                        .frame(height: 120)
+                        
+                        // Current player (bottom)
+                        PlayerView(
+                            player: viewModel.currentPlayer,
+                            position: .bottom,
+                            isCurrentPlayer: true
+                        )
+                        .padding(.vertical, 4)
+                        
+                        // Action buttons
+                        HStack(spacing: 12) {
+                            Button(action: { viewModel.passTurn() }) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "hand.raised.fill")
+                                        .font(.caption)
+                                    Text("Pass")
+                                        .font(.caption)
+                                        .fontWeight(.medium)
+                                }
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(Color.orange)
+                                .cornerRadius(20)
+                            }
+                            .disabled(viewModel.selectedCards.isEmpty)
+                            
+                            Button(action: { viewModel.playSelectedCards() }) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "play.fill")
+                                        .font(.caption)
+                                    Text("Play")
+                                        .font(.caption)
+                                        .fontWeight(.medium)
+                                }
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(viewModel.selectedCards.isEmpty ? Color.gray : Color.blue)
+                                .cornerRadius(20)
+                            }
+                            .disabled(viewModel.selectedCards.isEmpty)
+                        }
+                        .padding(.vertical, 4)
+                        
+                        // Player's cards - horizontal scroll
+                        if viewModel.gamePhase == .active {
                             CardHandView(
                                 cards: viewModel.playerHand,
                                 selectedCards: viewModel.selectedCards,
@@ -157,13 +138,29 @@ struct GameTableView: View {
                                     viewModel.toggleCardSelection(card)
                                 }
                             )
+                            .frame(height: 80)
                         }
-                        .padding(.bottom, 20)
                     }
+                    .frame(maxWidth: .infinity)
+                    
+                    // Right player
+                    VStack {
+                        Spacer()
+                        PlayerView(
+                            player: viewModel.rightPlayer,
+                            position: .right,
+                            isCurrentPlayer: viewModel.isCurrentPlayer(.right)
+                        )
+                        Spacer()
+                    }
+                    .frame(width: 80)
                 }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
             }
         }
         .navigationBarHidden(true)
+        .preferredColorScheme(.light)
         .alert("Game Menu", isPresented: $viewModel.showingGameMenu) {
             Button("Resign") {
                 viewModel.resignGame()
@@ -189,14 +186,14 @@ struct GameTableView: View {
     }
 }
 
-/// Beautiful player view
+/// Compact player view for landscape
 struct PlayerView: View {
     let player: Player
     let position: PlayerPosition
     let isCurrentPlayer: Bool
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 4) {
             // Player avatar
             ZStack {
                 Circle()
@@ -210,7 +207,7 @@ struct PlayerView: View {
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 60, height: 60)
+                    .frame(width: 40, height: 40)
                     .overlay(
                         Circle()
                             .stroke(isCurrentPlayer ? .white : .gray.opacity(0.5), lineWidth: 2)
@@ -218,19 +215,19 @@ struct PlayerView: View {
                 
                 if player.isConnected {
                     Text(String(player.displayName.prefix(1)).uppercased())
-                        .font(.title2)
+                        .font(.caption)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
                 } else {
                     Image(systemName: "wifi.slash")
-                        .font(.title2)
+                        .font(.caption)
                         .foregroundColor(.gray)
                 }
             }
             
             // Player name
             Text(player.displayName)
-                .font(.caption)
+                .font(.caption2)
                 .fontWeight(.medium)
                 .foregroundColor(.white)
                 .lineLimit(1)
@@ -241,19 +238,19 @@ struct PlayerView: View {
                     .font(.caption2)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
                     .background(Color.red)
-                    .cornerRadius(10)
+                    .cornerRadius(8)
             } else {
-                Text("WINNER!")
+                Text("WIN!")
                     .font(.caption2)
                     .fontWeight(.bold)
                     .foregroundColor(.yellow)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
                     .background(Color.green)
-                    .cornerRadius(10)
+                    .cornerRadius(8)
             }
         }
         .scaleEffect(isCurrentPlayer ? 1.1 : 1.0)
@@ -261,7 +258,7 @@ struct PlayerView: View {
     }
 }
 
-/// Beautiful play area
+/// Compact play area for landscape
 struct PlayAreaView: View {
     let currentTrick: [Card]
     let lastPlay: Play?
@@ -269,7 +266,7 @@ struct PlayAreaView: View {
     var body: some View {
         ZStack {
             // Table background
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: 12)
                 .fill(
                     LinearGradient(
                         gradient: Gradient(colors: [
@@ -281,22 +278,22 @@ struct PlayAreaView: View {
                     )
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.white.opacity(0.3), lineWidth: 2)
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
                 )
             
-            VStack(spacing: 12) {
+            VStack(spacing: 8) {
                 // Current trick
                 if !currentTrick.isEmpty {
-                    VStack(spacing: 8) {
+                    VStack(spacing: 4) {
                         Text("Current Trick")
-                            .font(.caption)
+                            .font(.caption2)
                             .foregroundColor(.white.opacity(0.8))
                         
-                        HStack(spacing: 8) {
+                        HStack(spacing: 4) {
                             ForEach(currentTrick, id: \.id) { card in
                                 CardView(card: card, isPlayable: false)
-                                    .scaleEffect(0.8)
+                                    .scaleEffect(0.6)
                             }
                         }
                     }
@@ -304,15 +301,15 @@ struct PlayAreaView: View {
                 
                 // Last play
                 if let lastPlay = lastPlay {
-                    VStack(spacing: 8) {
+                    VStack(spacing: 4) {
                         Text("Last Play")
-                            .font(.caption)
+                            .font(.caption2)
                             .foregroundColor(.white.opacity(0.8))
                         
-                        HStack(spacing: 6) {
+                        HStack(spacing: 3) {
                             ForEach(lastPlay.cards, id: \.id) { card in
                                 CardView(card: card, isPlayable: false)
-                                    .scaleEffect(0.7)
+                                    .scaleEffect(0.5)
                             }
                         }
                         
@@ -324,19 +321,19 @@ struct PlayAreaView: View {
                 
                 // Empty state
                 if currentTrick.isEmpty && lastPlay == nil {
-                    VStack(spacing: 8) {
+                    VStack(spacing: 4) {
                         Image(systemName: "suit.spade.fill")
-                            .font(.title)
+                            .font(.title3)
                             .foregroundColor(.white.opacity(0.5))
                         
                         Text("Waiting for first play")
-                            .font(.caption)
+                            .font(.caption2)
                             .foregroundColor(.white.opacity(0.7))
                     }
                 }
             }
         }
-        .padding(16)
+        .padding(8)
     }
 }
 

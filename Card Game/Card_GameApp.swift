@@ -12,6 +12,10 @@ struct Card_GameApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onAppear {
+                    // Force landscape orientation
+                    UIDevice.current.setValue(UIInterfaceOrientation.landscapeLeft.rawValue, forKey: "orientation")
+                }
         }
     }
 }
