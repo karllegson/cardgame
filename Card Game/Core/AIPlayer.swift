@@ -10,7 +10,7 @@ import Foundation
 /// AI player that can make intelligent card playing decisions
 class AIPlayer {
     private let gameEngine = GameEngine()
-    private let difficulty: AIDifficulty
+    let difficulty: AIDifficulty
     
     init(difficulty: AIDifficulty = .medium) {
         self.difficulty = difficulty

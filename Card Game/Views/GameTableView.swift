@@ -225,12 +225,23 @@ struct PlayerView: View {
                 }
             }
             
-            // Player name
-            Text(player.displayName)
-                .font(.caption2)
-                .fontWeight(.medium)
-                .foregroundColor(.white)
-                .lineLimit(1)
+            // Player name and AI difficulty
+            VStack(spacing: 1) {
+                Text(player.displayName)
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+                
+                // Show AI difficulty for AI players
+                if player.seatNumber > 0 {
+                    Text("AI")
+                        .font(.caption2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.yellow)
+                        .lineLimit(1)
+                }
+            }
             
             // Cards remaining
             if player.cardsRemaining > 0 {
@@ -427,7 +438,7 @@ class GameTableViewModel: ObservableObject {
         
         // If AI starts, make their move
         if startingPlayer != 0 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 self.makeAIMove()
             }
         }
@@ -510,6 +521,7 @@ class GameTableViewModel: ObservableObject {
         let aiPlayer = aiPlayers[aiIndex]
         let aiHand = getAIHand(for: gameState.turnPlayer)
         
+        // AI makes decision instantly (no delay needed)
         let decision = aiPlayer.makeDecision(
             hand: aiHand,
             lastPlay: lastPlay,
@@ -571,7 +583,7 @@ class GameTableViewModel: ObservableObject {
         
         // If it's AI's turn, make their move after a delay
         if gameState.turnPlayer != 0 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 self.makeAIMove()
             }
         }
@@ -640,6 +652,18 @@ class GameTableViewModel: ObservableObject {
         turnTimeRemaining = 0
         
         startGame()
+    }
+    
+    private func getAIDifficulty(for seatNumber: Int) -> String {
+        let aiIndex = seatNumber - 1
+        if aiIndex >= 0 && aiIndex < aiPlayers.count {
+            switch aiPlayers[aiIndex].difficulty {
+            case .easy: return "EASY"
+            case .medium: return "MED"
+            case .hard: return "HARD"
+            }
+        }
+        return "AI"
     }
 }
 
