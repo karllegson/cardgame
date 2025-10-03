@@ -199,45 +199,6 @@ struct CardHandView: View {
     }
 }
 
-/// A view for displaying cards in the play area
-struct PlayAreaView: View {
-    let currentTrick: [Card]
-    let lastPlay: Play?
-    
-    var body: some View {
-        VStack(spacing: 16) {
-            // Current trick
-            if !currentTrick.isEmpty {
-                HStack(spacing: 8) {
-                    ForEach(currentTrick, id: \.id) { card in
-                        CardView(card: card, isPlayable: false)
-                    }
-                }
-            }
-            
-            // Last play indicator
-            if let lastPlay = lastPlay {
-                VStack(spacing: 4) {
-                    Text("Last Play")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    HStack(spacing: 4) {
-                        ForEach(lastPlay.cards, id: \.id) { card in
-                            CardView(card: card, isPlayable: false)
-                                .scaleEffect(0.8)
-                        }
-                    }
-                    
-                    Text(lastPlay.handType.displayName)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-            }
-        }
-        .frame(minHeight: 120)
-    }
-}
 
 // MARK: - Button Styles
 

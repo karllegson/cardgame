@@ -84,34 +84,6 @@ struct PlayerStats: Codable {
     }
 }
 
-/// Player position around the table
-enum PlayerPosition {
-    case bottom    // Current player (bottom of screen)
-    case left      // Player to the left
-    case top       // Player at the top
-    case right     // Player to the right
-    
-    /// Returns the seat number for a given position
-    var seatNumber: Int {
-        switch self {
-        case .bottom: return 0
-        case .left: return 1
-        case .top: return 2
-        case .right: return 3
-        }
-    }
-    
-    /// Returns the position for a given seat number
-    static func from(seatNumber: Int) -> PlayerPosition {
-        switch seatNumber {
-        case 0: return .bottom
-        case 1: return .left
-        case 2: return .top
-        case 3: return .right
-        default: return .bottom
-        }
-    }
-}
 
 /// Player actions that can be performed
 enum PlayerAction: String, Codable {
@@ -137,5 +109,26 @@ struct PlayerActionData: Codable {
         self.playerId = playerId
         self.timestamp = Date()
         self.data = data
+    }
+}
+
+/// Player positions around the table
+enum PlayerPosition: Int, CaseIterable {
+    case bottom = 0
+    case left = 1
+    case top = 2
+    case right = 3
+    
+    var seatNumber: Int {
+        return self.rawValue
+    }
+    
+    var displayName: String {
+        switch self {
+        case .bottom: return "Bottom"
+        case .left: return "Left"
+        case .top: return "Top"
+        case .right: return "Right"
+        }
     }
 }

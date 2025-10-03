@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 /// The main home screen of the app
 struct HomeView: View {
@@ -13,6 +14,7 @@ struct HomeView: View {
     @State private var showingCreateGame = false
     @State private var showingJoinGame = false
     @State private var showingSettings = false
+    @State private var showingGame = false
     
     var body: some View {
         NavigationView {
@@ -49,7 +51,7 @@ struct HomeView: View {
                     VStack(spacing: 16) {
                         // Quick Play button
                         Button(action: {
-                            viewModel.startQuickPlay()
+                            showingGame = true
                         }) {
                             HStack {
                                 Image(systemName: "play.fill")
@@ -151,6 +153,9 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView()
+        }
+        .fullScreenCover(isPresented: $showingGame) {
+            GameTableView()
         }
         .alert("Error", isPresented: $viewModel.showingError) {
             Button("OK") { }

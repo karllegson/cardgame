@@ -6,9 +6,11 @@
 //
 
 import Foundation
+import Combine
 
 /// Core game engine for Pusoy Dos logic and validation
 class GameEngine: ObservableObject {
+    @Published var currentGameState: GameState?
     
     // MARK: - Game Validation
     
