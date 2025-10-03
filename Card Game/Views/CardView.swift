@@ -162,22 +162,22 @@ struct CardHandView: View {
     
     var body: some View {
         VStack(spacing: 16) {
-            // Cards in fan layout
-            ZStack {
-                ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
-                    CardView(
-                        card: card,
-                        isSelected: selectedCards.contains(card),
-                        isPlayable: true,
-                        onTap: { onCardTap(card) }
-                    )
-                    .offset(
-                        x: CGFloat(index - cards.count / 2) * 25 + dragOffset,
-                        y: selectedCards.contains(card) ? -20 : 0
-                    )
-                    .zIndex(selectedCards.contains(card) ? 1 : 0)
-                    .animation(.easeInOut(duration: 0.2), value: selectedCards.contains(card))
+            // Cards in horizontal layout for landscape
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: -15) {
+                    ForEach(cards, id: \.id) { card in
+                        CardView(
+                            card: card,
+                            isSelected: selectedCards.contains(card),
+                            isPlayable: true,
+                            onTap: { onCardTap(card) }
+                        )
+                        .scaleEffect(selectedCards.contains(card) ? 1.1 : 1.0)
+                        .offset(y: selectedCards.contains(card) ? -10 : 0)
+                        .animation(.easeInOut(duration: 0.2), value: selectedCards.contains(card))
+                    }
                 }
+                .padding(.horizontal, 20)
             }
             .frame(height: 100)
             

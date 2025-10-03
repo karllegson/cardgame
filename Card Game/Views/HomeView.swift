@@ -156,6 +156,7 @@ struct HomeView: View {
         }
         .fullScreenCover(isPresented: $showingGame) {
             GameTableView()
+                .preferredColorScheme(.light)
         }
         .alert("Error", isPresented: $viewModel.showingError) {
             Button("OK") { }

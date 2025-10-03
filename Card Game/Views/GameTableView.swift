@@ -23,77 +23,83 @@ struct GameTableView: View {
             )
             .ignoresSafeArea()
             
-            VStack(spacing: 0) {
-                // Top players (left and right)
-                HStack {
-                    // Left player
+            HStack(spacing: 0) {
+                // Left side - Left player
+                VStack {
+                    Spacer()
                     PlayerView(
                         player: viewModel.leftPlayer,
                         position: .left,
                         isCurrentPlayer: viewModel.isCurrentPlayer(.left)
                     )
+                    Spacer()
+                }
+                .frame(width: 120)
+                .padding(.leading, 20)
+                
+                // Center - Game area
+                VStack(spacing: 0) {
+                    // Top player
+                    PlayerView(
+                        player: viewModel.topPlayer,
+                        position: .top,
+                        isCurrentPlayer: viewModel.isCurrentPlayer(.top)
+                    )
+                    .padding(.top, 20)
                     
                     Spacer()
                     
-                    // Right player
+                    // Center play area
+                    PlayAreaView(
+                        currentTrick: viewModel.currentTrick,
+                        lastPlay: viewModel.lastPlay
+                    )
+                    .frame(height: 200)
+                    
+                    Spacer()
+                    
+                    // Current player (bottom) and their hand
+                    VStack(spacing: 16) {
+                        // Current player info
+                        PlayerView(
+                            player: viewModel.currentPlayer,
+                            position: .bottom,
+                            isCurrentPlayer: true
+                        )
+                        
+                        // Player's hand
+                        if viewModel.gamePhase == .active {
+                            CardHandView(
+                                cards: viewModel.playerHand,
+                                selectedCards: viewModel.selectedCards,
+                                onCardTap: { card in
+                                    viewModel.toggleCardSelection(card)
+                                },
+                                onPlayCards: {
+                                    viewModel.playSelectedCards()
+                                },
+                                onPass: {
+                                    viewModel.passTurn()
+                                }
+                            )
+                        }
+                    }
+                    .padding(.bottom, 20)
+                }
+                .frame(maxWidth: .infinity)
+                
+                // Right side - Right player
+                VStack {
+                    Spacer()
                     PlayerView(
                         player: viewModel.rightPlayer,
                         position: .right,
                         isCurrentPlayer: viewModel.isCurrentPlayer(.right)
                     )
+                    Spacer()
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 20)
-                
-                Spacer()
-                
-                // Center play area
-                PlayAreaView(
-                    currentTrick: viewModel.currentTrick,
-                    lastPlay: viewModel.lastPlay
-                )
-                .frame(height: 200)
-                
-                Spacer()
-                
-                // Top player
-                PlayerView(
-                    player: viewModel.topPlayer,
-                    position: .top,
-                    isCurrentPlayer: viewModel.isCurrentPlayer(.top)
-                )
-                .padding(.horizontal, 20)
-                
-                Spacer()
-                
-                // Current player (bottom) and their hand
-                VStack(spacing: 16) {
-                    // Current player info
-                    PlayerView(
-                        player: viewModel.currentPlayer,
-                        position: .bottom,
-                        isCurrentPlayer: true
-                    )
-                    
-                    // Player's hand
-                    if viewModel.gamePhase == .active {
-                        CardHandView(
-                            cards: viewModel.playerHand,
-                            selectedCards: viewModel.selectedCards,
-                            onCardTap: { card in
-                                viewModel.toggleCardSelection(card)
-                            },
-                            onPlayCards: {
-                                viewModel.playSelectedCards()
-                            },
-                            onPass: {
-                                viewModel.passTurn()
-                            }
-                        )
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
+                .frame(width: 120)
+                .padding(.trailing, 20)
             }
         }
         .navigationBarHidden(true)
@@ -515,9 +521,9 @@ class GameTableViewModel: ObservableObject {
     }
     
     private func getAIHand(for seatNumber: Int) -> [Card] {
-        // In a real implementation, we'd track AI hands
-        // For now, return a mock hand
-        return Card.createDeck().shuffled().prefix(13).map { $0 }
+        // For now, return a mock hand based on remaining cards
+        let remainingCards = gameState.players[seatNumber].cardsRemaining
+        return Card.createDeck().shuffled().prefix(remainingCards).map { $0 }
     }
     
     private func nextTurn() {
@@ -537,12 +543,14 @@ class GameTableViewModel: ObservableObject {
         turnTimeRemaining = 30 // 30 second timer
         
         gameTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            if self.turnTimeRemaining > 0 {
-                self.turnTimeRemaining -= 1
-            } else {
-                // Time's up - auto pass
-                if self.gameState.turnPlayer == 0 {
-                    self.passTurn()
+            Task { @MainActor in
+                if self.turnTimeRemaining > 0 {
+                    self.turnTimeRemaining -= 1
+                } else {
+                    // Time's up - auto pass
+                    if self.gameState.turnPlayer == 0 {
+                        self.passTurn()
+                    }
                 }
             }
         }
