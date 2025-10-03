@@ -13,6 +13,17 @@ struct Card: Identifiable, Codable, Equatable, Hashable {
     let suit: Suit
     let rank: Rank
     
+    /// Custom equality comparison based on suit and rank, not ID
+    static func == (lhs: Card, rhs: Card) -> Bool {
+        return lhs.suit == rhs.suit && lhs.rank == rhs.rank
+    }
+    
+    /// Custom hash based on suit and rank, not ID
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(suit)
+        hasher.combine(rank)
+    }
+    
     /// The display name of the card (e.g., "A♠", "K♥")
     var displayName: String {
         return "\(rank.displayName)\(suit.symbol)"
@@ -28,8 +39,12 @@ struct Card: Identifiable, Codable, Equatable, Hashable {
     /// - Returns: True if this card beats the other card
     func beats(_ other: Card) -> Bool {
         // In Pusoy Dos, higher rank beats lower rank
-        // If ranks are equal, suit doesn't matter for singles
-        return rank.beats(other.rank)
+        // If ranks are equal, higher suit beats lower suit
+        if rank.numericValue != other.rank.numericValue {
+            return rank.numericValue > other.rank.numericValue
+        } else {
+            return suit.suitValue > other.suit.suitValue
+        }
     }
 }
 
@@ -53,6 +68,16 @@ enum Suit: String, CaseIterable, Codable {
         switch self {
         case .spades, .clubs: return .black
         case .hearts, .diamonds: return .red
+        }
+    }
+    
+    /// Suit ranking for Pusoy Dos (Clubs < Spades < Hearts < Diamonds)
+    var suitValue: Int {
+        switch self {
+        case .clubs: return 1    // Lowest
+        case .spades: return 2
+        case .hearts: return 3
+        case .diamonds: return 4 // Highest
         }
     }
 }
@@ -82,10 +107,10 @@ enum Rank: String, CaseIterable, Codable {
         return rawValue
     }
     
-    /// Numeric value for comparison (2=2, J=11, Q=12, K=13, A=14)
+    /// Numeric value for comparison in Pusoy Dos (2=15 highest, 3=3 lowest, A=14)
     var numericValue: Int {
         switch self {
-        case .two: return 2
+        case .two: return 15  // 2 is highest in Pusoy Dos
         case .three: return 3
         case .four: return 4
         case .five: return 5
@@ -113,7 +138,6 @@ enum Rank: String, CaseIterable, Codable {
 enum HandType: String, CaseIterable, Codable {
     case single = "single"
     case pair = "pair"
-    case triple = "triple"
     case straight = "straight"
     case flush = "flush"
     case fullHouse = "full_house"
@@ -124,7 +148,6 @@ enum HandType: String, CaseIterable, Codable {
         switch self {
         case .single: return "Single"
         case .pair: return "Pair"
-        case .triple: return "Triple"
         case .straight: return "Straight"
         case .flush: return "Flush"
         case .fullHouse: return "Full House"
@@ -138,7 +161,6 @@ enum HandType: String, CaseIterable, Codable {
         switch self {
         case .single: return 1
         case .pair: return 2
-        case .triple: return 3
         case .straight, .flush, .fullHouse, .fourOfAKind, .straightFlush: return 5
         }
     }

@@ -16,20 +16,35 @@ struct GameTableView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Beautiful background
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        Color(red: 0.1, green: 0.3, blue: 0.1),
-                        Color(red: 0.2, green: 0.4, blue: 0.2),
-                        Color(red: 0.1, green: 0.2, blue: 0.1)
-                    ]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
+                // Wooden table background (like the reference Pusoy Dos app)
+                ZStack {
+                    // Base wooden color
+                    Color(red: 0.4, green: 0.2, blue: 0.1)
+                    
+                    // Wood grain texture effect
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(red: 0.5, green: 0.3, blue: 0.15),
+                            Color(red: 0.3, green: 0.15, blue: 0.05)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    
+                    // Subtle wood plank lines
+                    VStack(spacing: 0) {
+                        ForEach(0..<8, id: \.self) { _ in
+                            Rectangle()
+                                .fill(Color.black.opacity(0.1))
+                                .frame(height: 1)
+                            Spacer()
+                        }
+                    }
+                }
                 .ignoresSafeArea()
                 
                 // Main game layout - optimized for landscape
-                HStack(spacing: 8) {
+                HStack(spacing: 4) {
                     // Left player
                     VStack {
                         Spacer()
@@ -40,10 +55,10 @@ struct GameTableView: View {
                         )
                         Spacer()
                     }
-                    .frame(width: 80)
+                    .frame(width: 60)
                     
                     // Center game area
-                    VStack(spacing: 4) {
+                    VStack(spacing: 2) {
                         // Top bar with game info
                         HStack {
                             Button(action: { dismiss() }) {
@@ -67,8 +82,8 @@ struct GameTableView: View {
                                     .foregroundColor(.white)
                             }
                         }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
                         
                         // Top player
                         PlayerView(
@@ -76,14 +91,16 @@ struct GameTableView: View {
                             position: .top,
                             isCurrentPlayer: viewModel.isCurrentPlayer(.top)
                         )
-                        .padding(.vertical, 4)
+                        .padding(.vertical, 2)
                         
                         // Play area
                         PlayAreaView(
                             currentTrick: viewModel.currentTrick,
-                            lastPlay: viewModel.lastPlay
+                            lastPlay: viewModel.lastPlay,
+                            passCount: viewModel.gameState.passCount,
+                            players: viewModel.gameState.players
                         )
-                        .frame(height: 120)
+                        .frame(height: 90)
                         
                         // Current player (bottom)
                         PlayerView(
@@ -91,54 +108,68 @@ struct GameTableView: View {
                             position: .bottom,
                             isCurrentPlayer: true
                         )
-                        .padding(.vertical, 4)
+                        .padding(.vertical, 2)
                         
                         // Action buttons
-                        HStack(spacing: 12) {
+                        HStack(spacing: 8) {
                             Button(action: { viewModel.passTurn() }) {
-                                HStack(spacing: 4) {
+                                HStack(spacing: 2) {
                                     Image(systemName: "hand.raised.fill")
-                                        .font(.caption)
+                                        .font(.caption2)
                                     Text("Pass")
-                                        .font(.caption)
-                                        .fontWeight(.medium)
+                                        .font(.caption2)
+                                        .fontWeight(.bold)
                                 }
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8)
-                                .background(Color.orange)
+                                .background(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color.orange, Color.red]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
                                 .cornerRadius(20)
+                                .shadow(color: .orange.opacity(0.3), radius: 3, x: 0, y: 2)
                             }
                             .disabled(viewModel.selectedCards.isEmpty)
                             
                             Button(action: { viewModel.playSelectedCards() }) {
-                                HStack(spacing: 4) {
+                                HStack(spacing: 2) {
                                     Image(systemName: "play.fill")
-                                        .font(.caption)
+                                        .font(.caption2)
                                     Text("Play")
-                                        .font(.caption)
-                                        .fontWeight(.medium)
+                                        .font(.caption2)
+                                        .fontWeight(.bold)
                                 }
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8)
-                                .background(viewModel.selectedCards.isEmpty ? Color.gray : Color.blue)
+                                .background(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: viewModel.selectedCards.isEmpty ? [Color.gray, Color.gray.opacity(0.7)] : [Color.green, Color.blue]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
                                 .cornerRadius(20)
+                                .shadow(color: viewModel.selectedCards.isEmpty ? .clear : .green.opacity(0.3), radius: 3, x: 0, y: 2)
                             }
                             .disabled(viewModel.selectedCards.isEmpty)
                         }
-                        .padding(.vertical, 4)
+                        .padding(.vertical, 2)
                         
                         // Player's cards - horizontal scroll
                         if viewModel.gamePhase == .active {
                             CardHandView(
-                                cards: viewModel.playerHand,
+                                cards: viewModel.sortedPlayerHand,
                                 selectedCards: viewModel.selectedCards,
                                 onCardTap: { card in
                                     viewModel.toggleCardSelection(card)
                                 }
                             )
-                            .frame(height: 80)
+                            .padding(.bottom, 4)
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -153,12 +184,30 @@ struct GameTableView: View {
                         )
                         Spacer()
                     }
-                    .frame(width: 80)
+                    .frame(width: 60)
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
+                .padding(.horizontal, 4)
+                .padding(.vertical, 2)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                
+                // Temporary message overlay
+                if viewModel.showingTemporaryMessage {
+                    VStack {
+                        Spacer()
+                        Text(viewModel.temporaryMessage)
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 12)
+                            .background(Color.black.opacity(0.8))
+                            .cornerRadius(20)
+                            .transition(.opacity.combined(with: .scale))
+                    }
+                    .padding(.bottom, 100)
+                }
             }
         }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
         .navigationBarHidden(true)
         .preferredColorScheme(.light)
         .alert("Game Menu", isPresented: $viewModel.showingGameMenu) {
@@ -273,16 +322,18 @@ struct PlayerView: View {
 struct PlayAreaView: View {
     let currentTrick: [Card]
     let lastPlay: Play?
+    let passCount: Int
+    let players: [Player]
     
     var body: some View {
         ZStack {
-            // Table background
+            // Wooden table background (like the reference app)
             RoundedRectangle(cornerRadius: 12)
                 .fill(
                     LinearGradient(
                         gradient: Gradient(colors: [
-                            Color(red: 0.2, green: 0.4, blue: 0.2),
-                            Color(red: 0.1, green: 0.3, blue: 0.1)
+                            Color(red: 0.6, green: 0.4, blue: 0.2), // Lighter wood
+                            Color(red: 0.4, green: 0.2, blue: 0.1)  // Darker wood
                         ]),
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -290,39 +341,82 @@ struct PlayAreaView: View {
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                        .stroke(Color(red: 0.3, green: 0.15, blue: 0.05), lineWidth: 2)
                 )
+                .shadow(color: .black.opacity(0.3), radius: 5, x: 2, y: 2)
             
-            VStack(spacing: 8) {
-                // Current trick
+            VStack(spacing: 6) {
+                // Pass count indicator
+                if passCount > 0 {
+                    HStack {
+                        Image(systemName: "hand.raised.fill")
+                            .foregroundColor(.orange)
+                        Text("\(passCount) passed")
+                            .font(.caption2)
+                            .foregroundColor(.orange)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 2)
+                    .background(Color.black.opacity(0.3))
+                    .cornerRadius(8)
+                }
+                
+                // Current trick with stacking effect
                 if !currentTrick.isEmpty {
                     VStack(spacing: 4) {
                         Text("Current Trick")
                             .font(.caption2)
                             .foregroundColor(.white.opacity(0.8))
                         
-                        HStack(spacing: 4) {
-                            ForEach(currentTrick, id: \.id) { card in
-                                CardView(card: card, isPlayable: false)
-                                    .scaleEffect(0.6)
+                        ZStack {
+                            // Background cards (older cards with blur effect)
+                            if currentTrick.count > 1 {
+                                HStack(spacing: -8) {
+                                    ForEach(Array(currentTrick.dropLast().enumerated()), id: \.offset) { index, card in
+                                        CardView(card: card, isPlayable: false)
+                                            .scaleEffect(0.4)
+                                            .blur(radius: 1.5)
+                                            .opacity(0.6)
+                                            .offset(x: CGFloat(index * 2), y: CGFloat(index * 1))
+                                    }
+                                }
+                            }
+                            
+                            // Foreground card (most recent play)
+                            if let lastCard = currentTrick.last {
+                                CardView(card: lastCard, isPlayable: false)
+                                    .scaleEffect(0.5)
+                                    .offset(x: CGFloat((currentTrick.count - 1) * 2), y: CGFloat((currentTrick.count - 1) * 1))
                             }
                         }
+                        .frame(maxHeight: 45)
                     }
                 }
                 
-                // Last play
+                // Last play with player info
                 if let lastPlay = lastPlay {
                     VStack(spacing: 4) {
-                        Text("Last Play")
-                            .font(.caption2)
-                            .foregroundColor(.white.opacity(0.8))
-                        
-                        HStack(spacing: 3) {
-                            ForEach(lastPlay.cards, id: \.id) { card in
-                                CardView(card: card, isPlayable: false)
-                                    .scaleEffect(0.5)
+                        HStack {
+                            Text("Last Play")
+                                .font(.caption2)
+                                .foregroundColor(.white.opacity(0.8))
+                            
+                            if let lastPlayer = players.first(where: { $0.id == lastPlay.playerId }) {
+                                Text("by \(lastPlayer.displayName)")
+                                    .font(.caption2)
+                                    .foregroundColor(.yellow)
+                                    .fontWeight(.medium)
                             }
                         }
+                        
+                        // Last play cards with slight overlap
+                        HStack(spacing: -6) {
+                            ForEach(lastPlay.cards, id: \.id) { card in
+                                CardView(card: card, isPlayable: false)
+                                    .scaleEffect(0.4)
+                            }
+                        }
+                        .frame(maxHeight: 35)
                         
                         Text(lastPlay.handType.displayName)
                             .font(.caption2)
@@ -362,6 +456,8 @@ class GameTableViewModel: ObservableObject {
     @Published var showingGameMenu = false
     @Published var showingGameOver = false
     @Published var gameOverMessage = ""
+    @Published var temporaryMessage = ""
+    @Published var showingTemporaryMessage = false
     
     private let gameEngine = GameEngine()
     private let soundManager = SoundManager.shared
@@ -371,10 +467,41 @@ class GameTableViewModel: ObservableObject {
         AIPlayer(difficulty: .hard)
     ]
     private var gameTimer: Timer?
+    private var aiHands: [[Card]] = [] // Store actual AI hands
+    
+    // MARK: - Temporary Message System
+    
+    private func showTemporaryMessage(_ message: String, duration: TimeInterval = 2.0) {
+        temporaryMessage = message
+        showingTemporaryMessage = true
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+            self.showingTemporaryMessage = false
+        }
+    }
+    
+    // MARK: - Card Organization
+    
+    /// Sorts cards by rank then suit (like the reference Pusoy Dos app)
+    private func sortCardsForDisplay(_ cards: [Card]) -> [Card] {
+        return cards.sorted { card1, card2 in
+            // First sort by rank (2 is highest, 3 is lowest in Pusoy Dos)
+            if card1.rank.numericValue != card2.rank.numericValue {
+                return card1.rank.numericValue < card2.rank.numericValue
+            }
+            // Then sort by suit (Clubs < Spades < Hearts < Diamonds)
+            return card1.suit.suitValue < card2.suit.suitValue
+        }
+    }
     
     // Computed properties for players
     var currentPlayer: Player {
         return gameState.players[0] // Human player is always seat 0
+    }
+    
+    /// Player's hand sorted for display (like the reference Pusoy Dos app)
+    var sortedPlayerHand: [Card] {
+        return sortCardsForDisplay(playerHand)
     }
     
     var leftPlayer: Player {
@@ -422,6 +549,7 @@ class GameTableViewModel: ObservableObject {
         // Deal cards
         let hands = gameEngine.dealCards()
         playerHand = hands[0] // Human player gets first hand
+        aiHands = Array(hands[1...3]) // Store AI hands (seats 1-3)
         
         // Update player card counts
         for i in 0..<gameState.players.count {
@@ -474,10 +602,12 @@ class GameTableViewModel: ObservableObject {
             // Update game state
             gameState = gameState.withNewPlay(play)
             currentTrick = gameState.currentTrick
-            lastPlay = play
+            lastPlay = gameState.lastPlay
             
             // Remove cards from hand
-            playerHand.removeAll { selectedCards.contains($0) }
+            playerHand.removeAll { card in
+                selectedCards.contains { $0 == card }
+            }
             selectedCards.removeAll()
             
             // Update player card count
@@ -493,7 +623,7 @@ class GameTableViewModel: ObservableObject {
             }
             
             // Move to next player
-            nextTurn()
+            advanceTurn()
         }
     }
     
@@ -502,16 +632,21 @@ class GameTableViewModel: ObservableObject {
         
         gameState = gameState.withUpdatedPassCount(gameState.passCount + 1)
         
+        // Show pass message
+        showTemporaryMessage("You passed")
+        
         // Check if trick should be cleared
         if gameState.shouldClearTrick {
             gameState = gameState.withTrickCleared()
-            currentTrick.removeAll()
+            currentTrick = gameState.currentTrick
+            lastPlay = nil // Clear last play when trick is cleared
             soundManager.playTrickClear()
+            showTemporaryMessage("Trick cleared! New round starts")
         } else {
             soundManager.playCardPass()
         }
         
-        nextTurn()
+        advanceTurn()
     }
     
     private func makeAIMove() {
@@ -530,11 +665,16 @@ class GameTableViewModel: ObservableObject {
         
         if decision.isPass {
             // AI passes
+            let aiPlayer = gameState.players[gameState.turnPlayer]
+            showTemporaryMessage("\(aiPlayer.displayName) passed")
+            
             gameState = gameState.withUpdatedPassCount(gameState.passCount + 1)
             
             if gameState.shouldClearTrick {
                 gameState = gameState.withTrickCleared()
-                currentTrick.removeAll()
+                currentTrick = gameState.currentTrick
+                lastPlay = nil // Clear last play when trick is cleared
+                showTemporaryMessage("Trick cleared! New round starts")
             }
         } else {
             // AI plays cards
@@ -546,6 +686,7 @@ class GameTableViewModel: ObservableObject {
             )
             
             if validation.isValid {
+                let aiPlayer = gameState.players[gameState.turnPlayer]
                 let play = Play(
                     cards: cards,
                     handType: validation.handType!,
@@ -554,10 +695,19 @@ class GameTableViewModel: ObservableObject {
                 
                 gameState = gameState.withNewPlay(play)
                 currentTrick = gameState.currentTrick
-                lastPlay = play
+                lastPlay = gameState.lastPlay
+                
+                // Show what AI played
+                showTemporaryMessage("\(aiPlayer.displayName) played \(validation.handType!.displayName)")
+                
+                // Remove played cards from AI hand
+                let aiIndex = gameState.turnPlayer - 1
+                aiHands[aiIndex].removeAll { card in
+                    cards.contains { $0 == card }
+                }
                 
                 // Update AI player card count
-                let newCardCount = aiHand.count - cards.count
+                let newCardCount = aiHands[aiIndex].count
                 gameState.players[gameState.turnPlayer].updateCardsRemaining(newCardCount)
                 
                 // Check for AI win
@@ -568,16 +718,19 @@ class GameTableViewModel: ObservableObject {
             }
         }
         
-        nextTurn()
+        advanceTurn()
     }
     
     private func getAIHand(for seatNumber: Int) -> [Card] {
-        // For now, return a mock hand based on remaining cards
-        let remainingCards = gameState.players[seatNumber].cardsRemaining
-        return Card.createDeck().shuffled().prefix(remainingCards).map { $0 }
+        // Return the actual AI hand for the seat
+        let aiIndex = seatNumber - 1 // Convert seat number to AI array index
+        guard aiIndex >= 0 && aiIndex < aiHands.count else {
+            return []
+        }
+        return aiHands[aiIndex]
     }
     
-    private func nextTurn() {
+    private func advanceTurn() {
         gameState = gameState.withUpdatedTurnPlayer((gameState.turnPlayer + 1) % 4)
         startTurnTimer()
         
@@ -650,6 +803,7 @@ class GameTableViewModel: ObservableObject {
         lastPlay = nil
         gamePhase = .waiting
         turnTimeRemaining = 0
+        aiHands = [] // Reset AI hands
         
         startGame()
     }

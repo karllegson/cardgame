@@ -67,9 +67,6 @@ class GameEngine: ObservableObject {
         case 2:
             return isPair(cards: sortedCards) ? .pair : nil
             
-        case 3:
-            return isTriple(cards: sortedCards) ? .triple : nil
-            
         case 5:
             if isStraightFlush(cards: sortedCards) { return .straightFlush }
             if isFourOfAKind(cards: sortedCards) { return .fourOfAKind }
@@ -90,14 +87,9 @@ class GameEngine: ObservableObject {
     ///   - lastPlay: The last play made
     /// - Returns: True if the current play beats the last play
     func canBeatLastPlay(cards: [Card], handType: HandType, lastPlay: Play) -> Bool {
-        // Different hand types can't beat each other (except 5-card hands)
-        if handType != lastPlay.handType && !isFiveCardHand(handType) && !isFiveCardHand(lastPlay.handType) {
+        // In Pusoy Dos, you can only play the same hand type
+        guard handType == lastPlay.handType else {
             return false
-        }
-        
-        // 5-card hands can beat any other hand type
-        if isFiveCardHand(handType) && !isFiveCardHand(lastPlay.handType) {
-            return true
         }
         
         // Compare same hand types
@@ -107,9 +99,6 @@ class GameEngine: ObservableObject {
             
         case .pair:
             return comparePairs(cards, lastPlay.cards)
-            
-        case .triple:
-            return compareTriples(cards, lastPlay.cards)
             
         case .straight, .flush, .fullHouse, .fourOfAKind, .straightFlush:
             return compareFiveCardHands(cards, handType, lastPlay.cards, lastPlay.handType)
@@ -123,14 +112,14 @@ class GameEngine: ObservableObject {
         return Card.deal(deck)
     }
     
-    /// Determines the starting player (player with 3 of Diamonds)
+    /// Determines the starting player (player with 3 of Clubs)
     /// - Parameter hands: The dealt hands
-    /// - Returns: The seat number of the player with 3 of Diamonds
+    /// - Returns: The seat number of the player with 3 of Clubs
     func findStartingPlayer(hands: [[Card]]) -> Int {
-        let threeOfDiamonds = Card(suit: .diamonds, rank: .three)
+        let threeOfClubs = Card(suit: .clubs, rank: .three)
         
         for (index, hand) in hands.enumerated() {
-            if hand.contains(threeOfDiamonds) {
+            if hand.contains(threeOfClubs) {
                 return index
             }
         }
@@ -144,9 +133,6 @@ class GameEngine: ObservableObject {
         return cards.count == 2 && cards[0].rank == cards[1].rank
     }
     
-    private func isTriple(cards: [Card]) -> Bool {
-        return cards.count == 3 && cards[0].rank == cards[1].rank && cards[1].rank == cards[2].rank
-    }
     
     private func isStraight(cards: [Card]) -> Bool {
         guard cards.count == 5 else { return false }
@@ -195,14 +181,12 @@ class GameEngine: ObservableObject {
     }
     
     private func comparePairs(_ cards1: [Card], _ cards2: [Card]) -> Bool {
-        let rank1 = max(cards1[0].rank.numericValue, cards1[1].rank.numericValue)
-        let rank2 = max(cards2[0].rank.numericValue, cards2[1].rank.numericValue)
-        return rank1 > rank2
+        // Both pairs should have the same rank, so compare by highest suit
+        let maxSuit1 = max(cards1[0].suit.suitValue, cards1[1].suit.suitValue)
+        let maxSuit2 = max(cards2[0].suit.suitValue, cards2[1].suit.suitValue)
+        return maxSuit1 > maxSuit2
     }
     
-    private func compareTriples(_ cards1: [Card], _ cards2: [Card]) -> Bool {
-        return cards1[0].rank.numericValue > cards2[0].rank.numericValue
-    }
     
     private func compareFiveCardHands(_ cards1: [Card], _ handType1: HandType, _ cards2: [Card], _ handType2: HandType) -> Bool {
         // First compare hand types

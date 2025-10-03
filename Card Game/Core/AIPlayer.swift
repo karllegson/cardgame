@@ -50,7 +50,14 @@ class AIPlayer {
     // MARK: - Private Methods
     
     private func playLowestSingle(hand: [Card]) -> AIDecision {
-        let sortedHand = hand.sorted { $0.rank.numericValue < $1.rank.numericValue }
+        // In Pusoy Dos, 3 is lowest, so find the 3 of Clubs first, then other 3s, then 4s, etc.
+        let sortedHand = hand.sorted { card1, card2 in
+            if card1.rank.numericValue != card2.rank.numericValue {
+                return card1.rank.numericValue < card2.rank.numericValue
+            } else {
+                return card1.suit.suitValue < card2.suit.suitValue
+            }
+        }
         guard let lowestCard = sortedHand.first else { return .pass }
         return .play([lowestCard])
     }
@@ -58,7 +65,7 @@ class AIPlayer {
     private func findAllValidPlays(hand: [Card], lastPlay: Play, gameVariant: GameVariant) -> [[Card]] {
         var validPlays: [[Card]] = []
         
-        // Check all possible combinations
+        // Check all possible combinations of the same size as last play
         let combinations = generateAllCombinations(from: hand, ofSize: lastPlay.cards.count)
         
         for combination in combinations {
@@ -72,7 +79,7 @@ class AIPlayer {
     }
     
     private func generateAllCombinations(from cards: [Card], ofSize size: Int) -> [[Card]] {
-        guard size <= cards.count else { return [] }
+        guard size <= cards.count && size > 0 else { return [] }
         
         if size == 1 {
             return cards.map { [$0] }

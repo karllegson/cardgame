@@ -123,12 +123,12 @@ struct CardHandView: View {
                         isSelected: selectedCards.contains(card),
                         onTap: { onCardTap(card) }
                     )
-                    .scaleEffect(0.7) // Make cards smaller to fit more
+                    .scaleEffect(0.7) // Slightly larger for better visibility
                 }
             }
             .padding(.horizontal, 16)
         }
-        .frame(height: 60) // Reduced height
+        .frame(height: 80) // Increased height for better card visibility
     }
 }
 

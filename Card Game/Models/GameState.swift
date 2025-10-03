@@ -210,8 +210,8 @@ extension GameState {
         newState.currentTrick.append(contentsOf: play.cards)
         newState.lastPlay = play
         newState.playHistory.append(play)
-        newState.turnPlayer = (turnPlayer + 1) % 4
         newState.passCount = 0
+        // Note: turnPlayer advancement is handled by the calling code
         return newState
     }
     
@@ -219,6 +219,7 @@ extension GameState {
     func withTrickCleared() -> GameState {
         var newState = self
         newState.currentTrick.removeAll()
+        newState.lastPlay = nil
         newState.passCount = 0
         return newState
     }
