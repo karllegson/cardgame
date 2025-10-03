@@ -209,7 +209,7 @@ struct CreateGameView: View {
                 Button("Create Game") {
                     viewModel.createGame()
                 }
-                .buttonStyle(PrimaryButtonStyle())
+                .buttonStyle(.borderedProminent)
                 .disabled(viewModel.isLoading)
             }
             .padding()
@@ -272,7 +272,7 @@ struct JoinGameView: View {
                 Button("Join Game") {
                     viewModel.joinGame()
                 }
-                .buttonStyle(PrimaryButtonStyle())
+                .buttonStyle(.borderedProminent)
                 .disabled(viewModel.roomCode.count != 6 || viewModel.isLoading)
             }
             .padding()

@@ -108,18 +108,18 @@ struct GameResultsView: View {
                     Button("Rematch") {
                         onRematch()
                     }
-                    .buttonStyle(PrimaryButtonStyle())
+                    .buttonStyle(.borderedProminent)
                     
                     HStack(spacing: 12) {
                         Button("New Game") {
                             onNewGame()
                         }
-                        .buttonStyle(SecondaryButtonStyle())
+                        .buttonStyle(.bordered)
                         
                         Button("Home") {
                             onBackToHome()
                         }
-                        .buttonStyle(SecondaryButtonStyle())
+                        .buttonStyle(.bordered)
                     }
                 }
                 .padding(.bottom, 40)

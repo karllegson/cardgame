@@ -14,124 +14,156 @@ struct GameTableView: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        ZStack {
-            // Background
-            LinearGradient(
-                gradient: Gradient(colors: [.green.opacity(0.3), .blue.opacity(0.1)]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            
-            HStack(spacing: 0) {
-                // Left side - Left player
-                VStack {
-                    Spacer()
-                    PlayerView(
-                        player: viewModel.leftPlayer,
-                        position: .left,
-                        isCurrentPlayer: viewModel.isCurrentPlayer(.left)
-                    )
-                    Spacer()
-                }
-                .frame(width: 120)
-                .padding(.leading, 20)
+        GeometryReader { geometry in
+            ZStack {
+                // Beautiful background
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color(red: 0.1, green: 0.3, blue: 0.1),
+                        Color(red: 0.2, green: 0.4, blue: 0.2),
+                        Color(red: 0.1, green: 0.2, blue: 0.1)
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
-                // Center - Game area
+                // Game table
                 VStack(spacing: 0) {
-                    // Top player
-                    PlayerView(
-                        player: viewModel.topPlayer,
-                        position: .top,
-                        isCurrentPlayer: viewModel.isCurrentPlayer(.top)
-                    )
-                    .padding(.top, 20)
-                    
-                    Spacer()
-                    
-                    // Center play area
-                    PlayAreaView(
-                        currentTrick: viewModel.currentTrick,
-                        lastPlay: viewModel.lastPlay
-                    )
-                    .frame(height: 200)
-                    
-                    Spacer()
-                    
-                    // Current player (bottom) and their hand
-                    VStack(spacing: 16) {
-                        // Current player info
-                        PlayerView(
-                            player: viewModel.currentPlayer,
-                            position: .bottom,
-                            isCurrentPlayer: true
-                        )
+                    // Top bar with game info
+                    HStack {
+                        Button(action: { dismiss() }) {
+                            Image(systemName: "chevron.left")
+                                .font(.title2)
+                                .foregroundColor(.white)
+                        }
                         
-                        // Player's hand
-                        if viewModel.gamePhase == .active {
+                        Spacer()
+                        
+                        Text("Vector: Pusoy Dos")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                        
+                        Spacer()
+                        
+                        Button(action: { viewModel.showGameMenu() }) {
+                            Image(systemName: "ellipsis.circle")
+                                .font(.title2)
+                                .foregroundColor(.white)
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 10)
+                    
+                    // Main game area
+                    HStack(spacing: 0) {
+                        // Left player
+                        VStack {
+                            Spacer()
+                            PlayerView(
+                                player: viewModel.leftPlayer,
+                                position: .left,
+                                isCurrentPlayer: viewModel.isCurrentPlayer(.left)
+                            )
+                            Spacer()
+                        }
+                        .frame(width: 100)
+                        
+                        // Center game area
+                        VStack(spacing: 0) {
+                            // Top player
+                            PlayerView(
+                                player: viewModel.topPlayer,
+                                position: .top,
+                                isCurrentPlayer: viewModel.isCurrentPlayer(.top)
+                            )
+                            .padding(.top, 20)
+                            
+                            Spacer()
+                            
+                            // Play area
+                            PlayAreaView(
+                                currentTrick: viewModel.currentTrick,
+                                lastPlay: viewModel.lastPlay
+                            )
+                            .frame(height: 150)
+                            
+                            Spacer()
+                            
+                            // Current player (bottom)
+                            PlayerView(
+                                player: viewModel.currentPlayer,
+                                position: .bottom,
+                                isCurrentPlayer: true
+                            )
+                            .padding(.bottom, 20)
+                        }
+                        .frame(maxWidth: .infinity)
+                        
+                        // Right player
+                        VStack {
+                            Spacer()
+                            PlayerView(
+                                player: viewModel.rightPlayer,
+                                position: .right,
+                                isCurrentPlayer: viewModel.isCurrentPlayer(.right)
+                            )
+                            Spacer()
+                        }
+                        .frame(width: 100)
+                    }
+                    .padding(.horizontal, 20)
+                    
+                    // Player's hand area
+                    if viewModel.gamePhase == .active {
+                        VStack(spacing: 12) {
+                            // Action buttons
+                            HStack(spacing: 20) {
+                                Button(action: { viewModel.passTurn() }) {
+                                    HStack {
+                                        Image(systemName: "hand.raised.fill")
+                                        Text("Pass")
+                                    }
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 24)
+                                    .padding(.vertical, 12)
+                                    .background(Color.orange)
+                                    .cornerRadius(25)
+                                }
+                                .disabled(viewModel.selectedCards.isEmpty)
+                                
+                                Button(action: { viewModel.playSelectedCards() }) {
+                                    HStack {
+                                        Image(systemName: "play.fill")
+                                        Text("Play Cards")
+                                    }
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 24)
+                                    .padding(.vertical, 12)
+                                    .background(viewModel.selectedCards.isEmpty ? Color.gray : Color.blue)
+                                    .cornerRadius(25)
+                                }
+                                .disabled(viewModel.selectedCards.isEmpty)
+                            }
+                            
+                            // Player's cards
                             CardHandView(
                                 cards: viewModel.playerHand,
                                 selectedCards: viewModel.selectedCards,
                                 onCardTap: { card in
                                     viewModel.toggleCardSelection(card)
-                                },
-                                onPlayCards: {
-                                    viewModel.playSelectedCards()
-                                },
-                                onPass: {
-                                    viewModel.passTurn()
                                 }
                             )
                         }
+                        .padding(.bottom, 20)
                     }
-                    .padding(.bottom, 20)
                 }
-                .frame(maxWidth: .infinity)
-                
-                // Right side - Right player
-                VStack {
-                    Spacer()
-                    PlayerView(
-                        player: viewModel.rightPlayer,
-                        position: .right,
-                        isCurrentPlayer: viewModel.isCurrentPlayer(.right)
-                    )
-                    Spacer()
-                }
-                .frame(width: 120)
-                .padding(.trailing, 20)
             }
         }
         .navigationBarHidden(true)
-        .overlay(alignment: .topTrailing) {
-            // Game controls
-            VStack(spacing: 12) {
-                Button(action: {
-                    viewModel.showGameMenu()
-                }) {
-                    Image(systemName: "ellipsis.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(.white)
-                        .background(.black.opacity(0.3))
-                        .clipShape(Circle())
-                }
-                
-                if viewModel.gamePhase == .active {
-                    // Turn timer
-                    if viewModel.turnTimeRemaining > 0 {
-                        Text("\(viewModel.turnTimeRemaining)s")
-                            .font(.caption)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(.red.opacity(0.8))
-                            .cornerRadius(8)
-                    }
-                }
-            }
-            .padding(.top, 50)
-            .padding(.trailing, 20)
-        }
         .alert("Game Menu", isPresented: $viewModel.showingGameMenu) {
             Button("Resign") {
                 viewModel.resignGame()
@@ -157,7 +189,7 @@ struct GameTableView: View {
     }
 }
 
-/// View representing a player at the table
+/// Beautiful player view
 struct PlayerView: View {
     let player: Player
     let position: PlayerPosition
@@ -165,70 +197,71 @@ struct PlayerView: View {
     
     var body: some View {
         VStack(spacing: 8) {
-            // Player avatar and info
-            VStack(spacing: 4) {
-                // Avatar
-                ZStack {
-                    Circle()
-                        .fill(player.isConnected ? .blue.opacity(0.2) : .gray.opacity(0.2))
-                        .frame(width: 50, height: 50)
-                        .overlay(
-                            Circle()
-                                .stroke(isCurrentPlayer ? .blue : .gray.opacity(0.3), lineWidth: 2)
+            // Player avatar
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                isCurrentPlayer ? .blue : .gray.opacity(0.3),
+                                isCurrentPlayer ? .blue.opacity(0.7) : .gray.opacity(0.1)
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
                         )
-                    
-                    if player.isConnected {
-                        Text(String(player.displayName.prefix(1)).uppercased())
-                            .font(.headline)
-                            .foregroundColor(.blue)
-                    } else {
-                        Image(systemName: "wifi.slash")
-                            .foregroundColor(.gray)
-                    }
-                }
+                    )
+                    .frame(width: 60, height: 60)
+                    .overlay(
+                        Circle()
+                            .stroke(isCurrentPlayer ? .white : .gray.opacity(0.5), lineWidth: 2)
+                    )
                 
-                // Player name
-                Text(player.displayName)
-                    .font(.caption)
-                    .foregroundColor(.primary)
-                    .lineLimit(1)
-                
-                // Cards remaining
-                if player.cardsRemaining > 0 {
-                    Text("\(player.cardsRemaining) cards")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                } else {
-                    Text("WINNER!")
-                        .font(.caption2)
+                if player.isConnected {
+                    Text(String(player.displayName.prefix(1)).uppercased())
+                        .font(.title2)
                         .fontWeight(.bold)
-                        .foregroundColor(.green)
+                        .foregroundColor(.white)
+                } else {
+                    Image(systemName: "wifi.slash")
+                        .font(.title2)
+                        .foregroundColor(.gray)
                 }
             }
             
-            // Ready indicator
-            if !player.isReady && player.cardsRemaining == 13 {
-                HStack(spacing: 4) {
-                    Circle()
-                        .fill(.orange)
-                        .frame(width: 6, height: 6)
-                    Text("Not Ready")
-                        .font(.caption2)
-                        .foregroundColor(.orange)
-                }
+            // Player name
+            Text(player.displayName)
+                .font(.caption)
+                .fontWeight(.medium)
+                .foregroundColor(.white)
+                .lineLimit(1)
+            
+            // Cards remaining
+            if player.cardsRemaining > 0 {
+                Text("\(player.cardsRemaining)")
+                    .font(.caption2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.red)
+                    .cornerRadius(10)
+            } else {
+                Text("WINNER!")
+                    .font(.caption2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.yellow)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.green)
+                    .cornerRadius(10)
             }
         }
-        .padding(8)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(isCurrentPlayer ? .blue.opacity(0.1) : .clear)
-        )
         .scaleEffect(isCurrentPlayer ? 1.1 : 1.0)
         .animation(.easeInOut(duration: 0.2), value: isCurrentPlayer)
     }
 }
 
-/// Enhanced play area with better visual design
+/// Beautiful play area
 struct PlayAreaView: View {
     let currentTrick: [Card]
     let lastPlay: Play?
@@ -237,19 +270,28 @@ struct PlayAreaView: View {
         ZStack {
             // Table background
             RoundedRectangle(cornerRadius: 20)
-                .fill(.green.opacity(0.2))
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(red: 0.2, green: 0.4, blue: 0.2),
+                            Color(red: 0.1, green: 0.3, blue: 0.1)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
-                        .stroke(.green.opacity(0.3), lineWidth: 2)
+                        .stroke(Color.white.opacity(0.3), lineWidth: 2)
                 )
             
-            VStack(spacing: 16) {
+            VStack(spacing: 12) {
                 // Current trick
                 if !currentTrick.isEmpty {
                     VStack(spacing: 8) {
                         Text("Current Trick")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.white.opacity(0.8))
                         
                         HStack(spacing: 8) {
                             ForEach(currentTrick, id: \.id) { card in
@@ -265,7 +307,7 @@ struct PlayAreaView: View {
                     VStack(spacing: 8) {
                         Text("Last Play")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.white.opacity(0.8))
                         
                         HStack(spacing: 6) {
                             ForEach(lastPlay.cards, id: \.id) { card in
@@ -276,7 +318,7 @@ struct PlayAreaView: View {
                         
                         Text(lastPlay.handType.displayName)
                             .font(.caption2)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.white.opacity(0.7))
                     }
                 }
                 
@@ -285,11 +327,11 @@ struct PlayAreaView: View {
                     VStack(spacing: 8) {
                         Image(systemName: "suit.spade.fill")
                             .font(.title)
-                            .foregroundColor(.green.opacity(0.5))
+                            .foregroundColor(.white.opacity(0.5))
                         
                         Text("Waiting for first play")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.white.opacity(0.7))
                     }
                 }
             }
